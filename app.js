@@ -112,6 +112,7 @@
             shadow = -xSpdByPos(AE, 6, 1) * AE.side/2;
             drawShadow(AE,shadow);
         });
+        drawUser();
         game.cubeArray.forEach(function(AE,i) {
             AE.y += game.speed;
             //they get bigger as they approach
@@ -127,7 +128,7 @@
         spliced.forEach(function(AE) {
             game.cubeArray.splice(AE,1);
         });
-        drawUser();
+        //drawUser();
         drawScore();
         if (collisions()) {
             clearInterval(game.intervalCubes);
