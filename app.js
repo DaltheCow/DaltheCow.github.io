@@ -190,7 +190,7 @@
             sign = 0;
         }
 
-        ctx.fillStyle = 'grey';
+        ctx.fillStyle = '#004d00';
         ctx.beginPath();
         //+g is because shadows weren't getting draw where they should be
         if (sign){
