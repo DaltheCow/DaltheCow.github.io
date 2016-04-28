@@ -212,7 +212,7 @@
         values = {cubeArray: [],
                   score: 0,
                   speed: 1.5,
-                  moveSpd: 1.5,
+                  moveSpd: 2,
                   user: {x: cnvs.width/2, y: cnvs.height - 20},
                   userTurn: 'straight',
                   density: {size: 6, range: 13},
