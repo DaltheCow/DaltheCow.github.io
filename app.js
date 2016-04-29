@@ -20,6 +20,10 @@
         }
     }
 
+    function cubeObj() {
+        return {x: rand(cnvs.width * 2, -cnvs.width / 2), y: cnvs.height/2+5, side: 3, color: 'black'};
+    }
+
     //instead of just moving once on keydown,
     //keydown fires interval that moves blocks,
     //interval is killed on keyup
@@ -29,25 +33,19 @@
     function playerListen() {
         addEventListener('keydown', function(evt) {
             if (evt.keyCode === 37 && game.leftCnt === 0) {
-                game.leftIntvl = intervalFunc(move,1);
+                game.leftIntvl = intervalFunc(move,1,game);
                 if (game.rightCnt)
-                    game.userTurn = 'straight';
+                    game.user.turn = 'straight';
                 else
-                    game.userTurn = 'left';
-                /*if (game.rightCnt) {
-                    game.userTurn.x -= 10;
-                }*/
+                    game.user.turn = 'left';
                 game.leftCnt++;
             }
             if (evt.keyCode === 39 && game.rightCnt === 0) {
-                game.rightIntvl = intervalFunc(move,-1);
+                game.rightIntvl = intervalFunc(move,-1,game);
                 if (game.leftCnt)
-                    game.userTurn = 'straight';
+                    game.user.turn = 'straight';
                 else
-                    game.userTurn = 'right';
-                /*if (game.leftCnt) {
-                    game.userTurn.x += 10;
-                }*/
+                    game.user.turn = 'right';
                 game.rightCnt++;
             }
         },false);
@@ -56,33 +54,39 @@
             if (evt.keyCode === 37) {
                 clearInterval(game.leftIntvl);
                 if (game.rightCnt)
-                    game.userTurn = 'right';
+                    game.user.turn = 'right';
                 else
-                    game.userTurn = 'straight';
+                    game.user.turn = 'straight';
                 game.leftCnt = 0;
             }
             if (evt.keyCode === 39) {
                 clearInterval(game.rightIntvl);
                 if (game.leftCnt)
-                    game.userTurn = 'left';
+                    game.user.turn = 'left';
                 else
-                    game.userTurn = 'straight';
+                    game.user.turn = 'straight';
                 game.rightCnt = 0;
             }
         },false);
     }
-
-    function intervalFunc(func,sign) {
+    //add change: make it so that the direction of user depends on speedCount (speedCount * direction)
+    //speedCount makes it so that you aren't immediately at max move speed
+    function intervalFunc(func,sign,g) {
+        var speedCount = 0;
         return setInterval(function() {
-            func(sign);
+            if (speedCount > 1)
+                speedCount = 1;
+            func(sign, speedCount);
+            speedCount += .2;
+            g.user.amp = speedCount;
         },25,false);
     }
 
 
     //moves blocks when user keys in left or right arrow
-    function move(sign) {
+    function move(sign, speedCount) {
         game.cubeArray.forEach(function(AE) {
-            AE.x += sign * game.moveSpd * AE.y / cnvs.width;
+            AE.x += speedCount * sign * game.moveSpd * AE.y / cnvs.width;
         });
     }
 
@@ -95,31 +99,28 @@
         return -(multiplier/6 + yPos / cnvs.height) * xPos / cnvs.width/2 * 5;
     }
 
-    //A block's xspeed is determined by it's x distance from the center
-    //and also from it's y distance from the bottom
-    //updates block position based off of current x,y and then splices extra blocks
-    //also redraws blocks and user's block
+    //clear screen, draw sky, then grass, then shadows, then user, then blocks
+    //when going through blocks, position/speed is also updated
     function update() {
-        var spliced = [], adjustedXSpd, shadow;
+        var spliced = [], shadowSize;
 
         ctx.clearRect(0, 0, cnvs.width, cnvs.height);
-        ctx.fillStyle = '#00BFFF';
-        ctx.fillRect(0,0,cnvs.width,cnvs.height/2 +10);
-        ctx.fillStyle = 'green';
-        ctx.fillRect(0, cnvs.height/2 + 10, cnvs.width, cnvs.height/2 - 10);
-        //draw crappy shadows first
+        draw.sky();
+        draw.grass();
+        
         game.cubeArray.forEach(function(AE) {
-            shadow = -xSpdByPos(AE, 6, 1) * AE.side/2;
-            drawShadow(AE,shadow);
+            shadowSize = -xSpdByPos(AE, 6, 1) * AE.side/2;
+            draw.shadow(game.speed, AE, shadowSize);
         });
-        drawUser();
+
+        draw.user(game.user,game.user.turn);
         game.cubeArray.forEach(function(AE,i) {
             AE.y += game.speed;
             //they get bigger as they approach
             AE.side = 4 + Math.pow(AE.y / (cnvs.height/2), 3.5);
             //xSpd determined by
             AE.x += xSpdByPos(AE, game.speed, 2);
-            drawBlock(AE);
+            draw.block(AE);
             //splice if below bottom
             if (AE.y > cnvs.height + Math.pow(game.speed,4))
                 spliced.push(i);
@@ -129,23 +130,81 @@
             game.cubeArray.splice(AE,1);
         });
         //drawUser();
-        drawScore();
-        if (collisions()) {
+        draw.score(game.score);
+        if (collisions(game.returnUserDir(),game.cubeArray)) {
             clearInterval(game.intervalCubes);
             clearInterval(game.intervalUpdate);
             console.log(game.score);
         }
     }
+    
+    var draw = {
+        lines: function(points) {
+            points.forEach(function(AE) {
+                ctx.lineTo(AE[0],AE[1]);
+            });
+        },
+        score: function(s) {
+            ctx.fillStyle = 'blue';
+            ctx.font = "20px Verdana";
+            ctx.fillText(s, cnvs.width/10, cnvs.height/10);
+        },
+        sky: function() {
+            ctx.fillStyle = '#00BFFF';
+            ctx.fillRect(0,0,cnvs.width,cnvs.height/2 +10);
+        },
+        grass: function() {
+            ctx.fillStyle = 'green';
+            ctx.fillRect(0, cnvs.height/2 + 10, cnvs.width, cnvs.height/2 - 10);
+        },
+        user: function(u,turn) {
+            ctx.fillStyle = 'blue';
+            ctx.beginPath();
 
-    function drawScore() {
-        ctx.fillStyle = 'blue';
-        ctx.font = "20px Verdana";
-        ctx.fillText(game.score, cnvs.width/10, cnvs.height/10)
+            if (turn === 'straight'){
+                ctx.moveTo(u.x, u.y);
+                u.amp = 0;
+            }
+            else if (turn === 'right')
+                ctx.moveTo(u.x + u.amp * 10, u.y);
+            else
+                ctx.moveTo(u.x - u.amp * 10, u.y);
+            draw.lines([[u.x + 4, cnvs.height],[u.x - 4, cnvs.height]]);
+            ctx.fill();
+        },
+        block: function(e) {
+            ctx.fillStyle = e.color;
+            ctx.fillRect(e.x,e.y,e.side,e.side);
+        },
+        shadow: function(g,e,size) {
+            var sign = 1, points;
+            if (size < 0) {
+                sign = 0;
+            }
+            ctx.fillStyle = '#004d00';
+            ctx.beginPath();
+            //+g is because shadows weren't getting draw where they should be
+            if (sign){
+                ctx.moveTo(e.x, e.y + e.side + g);
+                points = [[e.x + e.side, e.y + e.side +g],
+                          [e.x + size + e.side, e.y + e.side/3 + g],
+                          [e.x + size, e.y + e.side/3 + g]];
+            }
+            else{
+                ctx.moveTo(e.x + e.side, e.y + e.side + g);
+                points = [[e.x, e.y + e.side + g],
+                          [e.x + size, e.y + e.side/3 + g],
+                          [e.x + size + e.side, e.y + e.side/3 + g]];
+            }
+            draw.lines(points);
+            ctx.fill();
+        }
     }
 
-    function collisions(AE) {
-        U = returnUserDir();
-        if (game.cubeArray.some(function(AE) {
+
+    function collisions(g,array) {
+        U = g;
+        if (array.some(function(AE) {
             if (AE.x < U.x && AE.x + AE.side > U.x && AE.y + AE.side/2 < U.y && AE.y + AE.side > U.y)
                 return true;
         }))
@@ -154,67 +213,21 @@
             return false;
     }
 
-    function returnUserDir() {
-        if (game.userTurn === 'straight')
-            return {x: game.user.x, y: game.user.y};
-        else if (game.userTurn === 'right')
-            return {x: game.user.x + 10, y: game.user.y};
-        else
-            return {x: game.user.x - 10, y: game.user.y}
-    }
-
-    function drawUser() {
-        ctx.fillStyle = 'blue';
-        ctx.beginPath();
-
-        if (game.userTurn === 'straight')
-            ctx.moveTo(game.user.x, game.user.y);
-        else if (game.userTurn === 'right')
-            ctx.moveTo(game.user.x + 10, game.user.y);
-        else
-            ctx.moveTo(game.user.x - 10, game.user.y);
-
-        ctx.lineTo(game.user.x + 4, cnvs.height);
-        ctx.lineTo(game.user.x - 4, cnvs.height);
-        ctx.fill();
-    }
-
-    function drawBlock(elem) {
-        ctx.fillStyle = elem.color;
-        ctx.fillRect(elem.x,elem.y,elem.side,elem.side);
-    }
-
-    function drawShadow(elem,shadow) {
-        var sign = 1, g = game.speed;
-        if (shadow < 0) {
-            sign = 0;
-        }
-
-        ctx.fillStyle = '#004d00';
-        ctx.beginPath();
-        //+g is because shadows weren't getting draw where they should be
-        if (sign){
-            ctx.moveTo(elem.x, elem.y + elem.side + g);
-            ctx.lineTo(elem.x + elem.side, elem.y + elem.side + g);
-            ctx.lineTo(elem.x + shadow + elem.side, elem.y + elem.side/3 + g);
-            ctx.lineTo(elem.x + shadow, elem.y + elem.side/3 + g);
-        }
-        else{
-            ctx.moveTo(elem.x + elem.side, elem.y + elem.side + g);
-            ctx.lineTo(elem.x, elem.y + elem.side + g);
-            ctx.lineTo(elem.x + shadow, elem.y + elem.side/3 + g);
-            ctx.lineTo(elem.x + shadow + elem.side, elem.y + elem.side/3 + g);
-        }
-        ctx.fill();
-    }
-
     function init() {
         values = {cubeArray: [],
                   score: 0,
                   speed: 1.5,
                   moveSpd: 2,
-                  user: {x: cnvs.width/2, y: cnvs.height - 20},
-                  userTurn: 'straight',
+                  user: {x: cnvs.width/2, y: cnvs.height - 20, turn: 'straight', amp: 0},
+                  returnUserDir: function() {
+                    var u = values.user;
+                    if (u.turn === 'straight')
+                        return {x: u.x, y: u.y};
+                    else if (u.turn === 'right')
+                        return {x: u.x + u.amp * 10, y: u.y};
+                    else
+                        return {x: u.x - u.amp * 10, y: u.y}
+                  },
                   density: {size: 6, range: 13},
                   intervalCubes: setInterval(function()
                     { cubePush(values.density.size, 
@@ -234,10 +247,6 @@
         }
         playerListen();
         return values;
-    }
-
-    function cubeObj() {
-        return {x: rand(cnvs.width * 2, -cnvs.width / 2), y: cnvs.height/2+5, side: 3, color: 'black'};
     }
 
     function rand(size,start) {
