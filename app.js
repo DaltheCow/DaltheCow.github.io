@@ -7,7 +7,7 @@
       document.body.appendChild(canvas);
       return [canvas,canvas.getContext('2d')];
     }
-    var h = window.innerHeight / 1.05;
+    var h = window.innerHeight;
     var w = 475 * h / 750;
     var canvasArray = createCanvas(w, h);
     var cnvs = canvasArray[0], ctx = canvasArray[1];
@@ -15,6 +15,8 @@
     function resize() {
         cnvs.width = 450 * window.innerHeight / 750;
         cnvs.height = window.innerHeight;
+        game.user.x = cnvs.width / 2;
+        game.user.y = cnvs.height - cnvs.height/25;
     }
 
     window.onresize = resize;
