@@ -8,7 +8,7 @@
       return [canvas,canvas.getContext('2d')];
     }
 
-    var canvasArray = createCanvas(300,500);
+    var canvasArray = createCanvas(600,1000);
     var cnvs = canvasArray[0], ctx = canvasArray[1];
     game = init();
 
@@ -99,10 +99,10 @@
         return -(multiplier/6 + yPos / cnvs.height) * xPos / cnvs.width/2 * 5;
     }
 
-    //clear screen, draw sky, then grass, then shadows, then user, then blocks
-    //when going through blocks, position/speed is also updated
+    //Clear screen, draw sky, then grass, then shadows, then user, then blocks, then score.
+    //While going through blocks, position/speed is also updated, then splice expired blocks out
     function update() {
-        var spliced = [], shadowSize;
+        var expired = [], shadowSize;
 
         ctx.clearRect(0, 0, cnvs.width, cnvs.height);
         draw.sky();
@@ -123,14 +123,15 @@
             draw.block(AE);
             //splice if below bottom
             if (AE.y > cnvs.height + Math.pow(game.speed,4))
-                spliced.push(i);
+                expired.push(i);
         });
 
-        spliced.forEach(function(AE) {
+        draw.score(game.score);
+
+        expired.forEach(function(AE) {
             game.cubeArray.splice(AE,1);
         });
-        //drawUser();
-        draw.score(game.score);
+
         if (collisions(game.returnUserDir(),game.cubeArray)) {
             clearInterval(game.intervalCubes);
             clearInterval(game.intervalUpdate);
@@ -138,6 +139,17 @@
         }
     }
     
+    function collisions(U,array) {
+        if (array.some(function(AE) {
+            if (AE.x < U.x && AE.x + AE.side > U.x &&
+                AE.y + AE.side/2 < U.y && AE.y + AE.side > U.y)
+                return true;
+        }))
+            return true;
+        else
+            return false;
+    }
+
     var draw = {
         lines: function(points) {
             points.forEach(function(AE) {
@@ -199,18 +211,6 @@
             draw.lines(points);
             ctx.fill();
         }
-    }
-
-
-    function collisions(g,array) {
-        U = g;
-        if (array.some(function(AE) {
-            if (AE.x < U.x && AE.x + AE.side > U.x && AE.y + AE.side/2 < U.y && AE.y + AE.side > U.y)
-                return true;
-        }))
-            return true;
-        else
-            return false;
     }
 
     function init() {
