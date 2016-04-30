@@ -8,7 +8,7 @@
       return [canvas,canvas.getContext('2d')];
     }
 
-    var canvasArray = createCanvas(300,500);
+    var canvasArray = createCanvas(450,750);
     var cnvs = canvasArray[0], ctx = canvasArray[1];
     game = init();
 
@@ -121,11 +121,11 @@
 
 
 
-
+            //5-16
             //figure out how to scale this
-            AE.side = cnvs.height/125 + Math.pow(AE.y / (cnvs.height/2), 3.5);
-
-
+            //AE.side = cnvs.height/125 + Math.pow(AE.y / (cnvs.height/2), 3.5);
+            AE.side = (AE.y - cnvs.height / 2) * 11 / 250 + 5 * cnvs.height / 500;
+            // side = (AE.y - cnvs.height / 2) * 11 / 250 + 5 * cnvs.height / 500 
 
 
 
