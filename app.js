@@ -8,7 +8,7 @@
       return [canvas,canvas.getContext('2d')];
     }
     var h = window.innerHeight / 1.05;
-    var w = 450 * h / 750;
+    var w = 475 * h / 750;
     var canvasArray = createCanvas(w, h);
     var cnvs = canvasArray[0], ctx = canvasArray[1];
 
