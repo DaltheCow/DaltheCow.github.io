@@ -7,9 +7,17 @@
       document.body.appendChild(canvas);
       return [canvas,canvas.getContext('2d')];
     }
-
-    var canvasArray = createCanvas(450,750);
+    var h = window.innerHeight / 1.05;
+    var w = 450 * h / 750;
+    var canvasArray = createCanvas(w, h);
     var cnvs = canvasArray[0], ctx = canvasArray[1];
+
+    function resize() {
+        cnvs.width = 450 * window.innerHeight / 750;
+        cnvs.height = window.innerHeight;
+    }
+
+    window.onresize = resize;
     game = init();
 
     //spawns blocks
@@ -109,8 +117,11 @@
         draw.grass();
         
         game.cubeArray.forEach(function(AE) {
-            shadowSize = -xSpdByPos(AE, 6, 1) * AE.side/2;
-            draw.shadow(game.speed, AE, shadowSize);
+            //checks if cube is below sky
+            if (AE.y >= cnvs.height / 2 + cnvs.height / 50) {
+                shadowSize = -xSpdByPos(AE, 6, 1) * AE.side/2;
+                draw.shadow(game.speed, AE, shadowSize);
+            }
         });
 
         draw.user(game.user,game.user.turn);
