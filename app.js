@@ -8,7 +8,7 @@
       return [canvas,canvas.getContext('2d')];
     }
 
-    var canvasArray = createCanvas(600,1000);
+    var canvasArray = createCanvas(300,500);
     var cnvs = canvasArray[0], ctx = canvasArray[1];
     game = init();
 
@@ -21,7 +21,7 @@
     }
 
     function cubeObj() {
-        return {x: rand(cnvs.width * 2, -cnvs.width / 2), y: cnvs.height/2+5, side: 3, color: 'black'};
+        return {x: rand(cnvs.width * 2, -cnvs.width / 2), y: cnvs.height/2 + cnvs.height / 100, side: cnvs.width / 100, color: 'black'};
     }
 
     //instead of just moving once on keydown,
@@ -94,9 +94,9 @@
     //uses that and distance from bottom to calculate xSpd relative to position
     //cent means centered, a 2 comes in if centered, a 1 if not
     function xSpdByPos(elem,multiplier,cent) {
-        var xPos = cnvs.width/2 - (elem.x + elem.side/2);
-        var yPos = elem.y + elem.side/cent;
-        return -(multiplier/6 + yPos / cnvs.height) * xPos / cnvs.width/2 * 5;
+        var xPos = cnvs.width / 2 - (elem.x + elem.side/2);
+        var yPos = elem.y + elem.side / cent;
+        return -(multiplier / 6 + yPos / cnvs.height) * xPos / cnvs.width / 2 * 5;
     }
 
     //Clear screen, draw sky, then grass, then shadows, then user, then blocks, then score.
@@ -117,12 +117,32 @@
         game.cubeArray.forEach(function(AE,i) {
             AE.y += game.speed;
             //they get bigger as they approach
-            AE.side = 4 + Math.pow(AE.y / (cnvs.height/2), 3.5);
+
+
+
+
+
+            //figure out how to scale this
+            AE.side = cnvs.height/125 + Math.pow(AE.y / (cnvs.height/2), 3.5);
+
+
+
+
+
+
             //xSpd determined by
             AE.x += xSpdByPos(AE, game.speed, 2);
             draw.block(AE);
             //splice if below bottom
+
+
+
+            //scale this too maybe
             if (AE.y > cnvs.height + Math.pow(game.speed,4))
+
+
+
+
                 expired.push(i);
         });
 
@@ -153,21 +173,21 @@
     var draw = {
         lines: function(points) {
             points.forEach(function(AE) {
-                ctx.lineTo(AE[0],AE[1]);
+                ctx.lineTo(AE[0], AE[1]);
             });
         },
         score: function(s) {
-            ctx.fillStyle = 'blue';
-            ctx.font = "20px Verdana";
+            var num = cnvs.width / 15
+            ctx.font = num + "px Verdana";
             ctx.fillText(s, cnvs.width/10, cnvs.height/10);
         },
         sky: function() {
             ctx.fillStyle = '#00BFFF';
-            ctx.fillRect(0,0,cnvs.width,cnvs.height/2 +10);
+            ctx.fillRect(0, 0, cnvs.width, cnvs.height / 2 + cnvs.height / 50);
         },
         grass: function() {
             ctx.fillStyle = 'green';
-            ctx.fillRect(0, cnvs.height/2 + 10, cnvs.width, cnvs.height/2 - 10);
+            ctx.fillRect(0, cnvs.height/2 + cnvs.height / 50, cnvs.width, cnvs.height / 2 - cnvs.height / 50);
         },
         user: function(u,turn) {
             ctx.fillStyle = 'blue';
@@ -178,15 +198,15 @@
                 u.amp = 0;
             }
             else if (turn === 'right')
-                ctx.moveTo(u.x + u.amp * 10, u.y);
+                ctx.moveTo(u.x + u.amp * cnvs.width / 30, u.y);
             else
-                ctx.moveTo(u.x - u.amp * 10, u.y);
-            draw.lines([[u.x + 4, cnvs.height],[u.x - 4, cnvs.height]]);
+                ctx.moveTo(u.x - u.amp * cnvs.width / 30, u.y);
+            draw.lines([[u.x + cnvs.width / 75, cnvs.height], [u.x - cnvs.width / 75, cnvs.height]]);
             ctx.fill();
         },
         block: function(e) {
             ctx.fillStyle = e.color;
-            ctx.fillRect(e.x,e.y,e.side,e.side);
+            ctx.fillRect(e.x, e.y, e.side, e.side);
         },
         shadow: function(g,e,size) {
             var sign = 1, points;
@@ -218,15 +238,15 @@
                   score: 0,
                   speed: 1.5 * cnvs.height / 500,
                   moveSpd: 2 * cnvs.width / 300,
-                  user: {x: cnvs.width/2, y: cnvs.height - 20, turn: 'straight', amp: 0},
+                  user: {x: cnvs.width/2, y: cnvs.height - cnvs.height/25, turn: 'straight', amp: 0},
                   returnUserDir: function() {
                     var u = values.user;
                     if (u.turn === 'straight')
                         return {x: u.x, y: u.y};
                     else if (u.turn === 'right')
-                        return {x: u.x + u.amp * 10, y: u.y};
+                        return {x: u.x + u.amp * cnvs.width / 30, y: u.y};
                     else
-                        return {x: u.x - u.amp * 10, y: u.y}
+                        return {x: u.x - u.amp * cnvs.width / 30, y: u.y}
                   },
                   density: {size: 6, range: 13},
                   intervalCubes: setInterval(function()
@@ -236,8 +256,8 @@
                   intervalUpdate: setInterval(update,20,false),
                   //v The below are for user input handling v
                   intervalSpeed: setInterval(function() {
-                    values.speed += .025;
-                    values.moveSpd += .005;
+                    values.speed += .025 * cnvs.width / 300 ;
+                    values.moveSpd += .005 * cnvs.width / 300;
                     values.score +=1;
                   },1000,false),
                   leftIntvl: null,
