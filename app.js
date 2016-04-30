@@ -117,31 +117,14 @@
         game.cubeArray.forEach(function(AE,i) {
             AE.y += game.speed;
             //they get bigger as they approach
-
-
-
-
-            //5-16
-            //figure out how to scale this
-            //AE.side = cnvs.height/125 + Math.pow(AE.y / (cnvs.height/2), 3.5);
-            AE.side = (AE.y - cnvs.height / 2) * 11 / 250 + 5 * cnvs.height / 500;
-            // side = (AE.y - cnvs.height / 2) * 11 / 250 + 5 * cnvs.height / 500 
-
-
-
-
+            AE.side = (AE.y - cnvs.height / 2) * 1 / 28 + 4 * cnvs.height / 500;
             //xSpd determined by
             AE.x += xSpdByPos(AE, game.speed, 2);
             draw.block(AE);
             //splice if below bottom
 
-
-
-            //scale this too maybe
+            //add change: scale this too maybe
             if (AE.y > cnvs.height + Math.pow(game.speed,4))
-
-
-
 
                 expired.push(i);
         });
