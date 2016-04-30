@@ -216,8 +216,8 @@
     function init() {
         values = {cubeArray: [],
                   score: 0,
-                  speed: 1.5,
-                  moveSpd: 2,
+                  speed: 1.5 * cnvs.height / 500,
+                  moveSpd: 2 * cnvs.width / 300,
                   user: {x: cnvs.width/2, y: cnvs.height - 20, turn: 'straight', amp: 0},
                   returnUserDir: function() {
                     var u = values.user;
