@@ -7,16 +7,42 @@
       document.body.appendChild(canvas);
       return [canvas,canvas.getContext('2d')];
     }
+    var img = new Image();
+    img.src = "BlockRunner.png";
     var h = window.innerHeight;
     var w = 475 * h / 750;
     var canvasArray = createCanvas(w, h);
     var cnvs = canvasArray[0], ctx = canvasArray[1];
 
     function resize() {
+        var oldWidth = cnvs.width;
+        var oldHeight = cnvs.height;
         cnvs.width = 450 * window.innerHeight / 750;
         cnvs.height = window.innerHeight;
+        var ratio = cnvs.width/oldWidth;
         game.user.x = cnvs.width / 2;
         game.user.y = cnvs.height - cnvs.height/25;
+
+        ctx.clearRect(0, 0, cnvs.width, cnvs.height);
+        draw.grass();
+        game.speed = game.speed * ratio;
+        game.move = game.move * ratio;
+        game.cubeArray.forEach(function(AE) {
+            AE.x = AE.x * ratio;
+            AE.y = AE.y * ratio;
+            AE.side = AE.side * ratio;
+            shadowSize = -xSpdByPos(AE, 6, 1) * AE.side/2;
+            draw.shadow(game.speed, AE, shadowSize);
+        });
+        draw.sky();
+        draw.title();
+
+        draw.user(game.user,game.user.turn);
+        game.cubeArray.forEach(function(AE,i) {
+            draw.block(AE);
+        });
+
+        draw.score(game.score);
     }
 
     window.onresize = resize;
@@ -42,6 +68,7 @@
 
     function playerListen() {
         addEventListener('keydown', function(evt) {
+            draw.title = function(){};
             if (evt.keyCode === 37 && game.leftCnt === 0) {
                 game.leftIntvl = intervalFunc(move,1,game);
                 if (game.rightCnt)
@@ -115,16 +142,16 @@
         var expired = [], shadowSize;
 
         ctx.clearRect(0, 0, cnvs.width, cnvs.height);
-        draw.sky();
         draw.grass();
         
         game.cubeArray.forEach(function(AE) {
-            //checks if cube is below sky
             if (AE.y >= cnvs.height / 2 + cnvs.height / 50) {
                 shadowSize = -xSpdByPos(AE, 6, 1) * AE.side/2;
                 draw.shadow(game.speed, AE, shadowSize);
             }
         });
+        draw.sky();
+        draw.title();
 
         draw.user(game.user,game.user.turn);
         game.cubeArray.forEach(function(AE,i) {
@@ -226,6 +253,9 @@
             }
             draw.lines(points);
             ctx.fill();
+        },
+        title: function() {
+            ctx.drawImage(img,cnvs.width/30, cnvs.height/30, cnvs.width*1.3, cnvs.height/1.8);
         }
     }
 
