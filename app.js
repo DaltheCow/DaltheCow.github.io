@@ -10,7 +10,7 @@
     var img = new Image();
     img.src = "BlockRunner.png";
     var ua = navigator.userAgent.toLowerCase();
-    var isMobile = ua.indexOf("mobile") > -1; //&& ua.indexOf("android");
+    var isMobile = true;//ua.indexOf("mobile") > -1; //&& ua.indexOf("android");
     var h = window.innerHeight;
     var w = 475 * h / 750;
     var canvasArray = createCanvas(w, h);
@@ -133,7 +133,7 @@
     function playerListenMobile() {
         window.addEventListener("deviceorientation", orientationUpdate, false);
         function orientationUpdate(e) {
-                game.user.orientation = event.gamma;
+                game.user.orientation = e.gamma;
                 //mobileMove();
         }
     }
@@ -163,6 +163,8 @@
             orient = -30;
         if (Math.abs(orient) < 3)
             orient = 0;
+        if (isMobile)
+            game.user.amp = orient/30;
         orient = orient / 30;
 
         ctx.clearRect(0, 0, cnvs.width, cnvs.height);
@@ -241,8 +243,10 @@
         user: function(u,turn) {
             ctx.fillStyle = 'blue';
             ctx.beginPath();
-
-            if (turn === 'straight'){
+            if (isMobile) {
+                ctx.moveTo(u.x + u.amp * cnvs.width / 30, u.y);
+            }
+            else if (turn === 'straight') {
                 ctx.moveTo(u.x, u.y);
                 u.amp = 0;
             }
@@ -294,12 +298,14 @@
                          turn: 'straight', amp: 0, orientation: 0},
                   returnUserDir: function() {
                     var u = values.user;
+                    if (isMobile)
+                        return {x: u.x + u.amp * cnvs.width / 30, y: u.y};
                     if (u.turn === 'straight')
                         return {x: u.x, y: u.y};
                     else if (u.turn === 'right')
                         return {x: u.x + u.amp * cnvs.width / 30, y: u.y};
                     else
-                        return {x: u.x - u.amp * cnvs.width / 30, y: u.y}
+                        return {x: u.x - u.amp * cnvs.width / 30, y: u.y};
                   },
                   density: {size: 6, range: 13},
                   intervalCubes: setInterval(function()
