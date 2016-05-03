@@ -9,6 +9,8 @@
     }
     var img = new Image();
     img.src = "BlockRunner.png";
+    var ua = navigator.userAgent.toLowerCase();
+    var isMobile = ua.indexOf("mobile") > -1; //&& ua.indexOf("android");
     var h = window.innerHeight;
     var w = 475 * h / 750;
     var canvasArray = createCanvas(w, h);
@@ -127,6 +129,21 @@
         });
     }
 
+
+    function playerListenMobile() {
+        window.addEventListener("deviceorientation", orientationUpdate, false);
+        function orientationUpdate(e) {
+                game.user.orientation = event.gamma;
+                //mobileMove();
+        }
+    }
+
+    function mobileMove(g) {
+        game.cubeArray.forEach(function(AE) {
+            AE.x += 5 / 4 * game.moveSpd * AE.y / cnvs.width;
+        });
+    }
+
     //determines distance from center x of an elem and
     //uses that and distance from bottom to calculate xSpd relative to position
     //cent means centered, a 2 comes in if centered, a 1 if not
@@ -139,7 +156,14 @@
     //Clear screen, draw sky, then grass, then shadows, then user, then blocks, then score.
     //While going through blocks, position/speed is also updated, then splice expired blocks out
     function update() {
-        var expired = [], shadowSize;
+        var expired = [], shadowSize, orient = game.user.orientation;
+        if (orient > 30)
+            orient = 30;
+        if (orient < -30)
+            orient = -30;
+        if (Math.abs(orient) < 3)
+            orient = 0;
+        orient = orient / 30;
 
         ctx.clearRect(0, 0, cnvs.width, cnvs.height);
         draw.grass();
@@ -160,6 +184,8 @@
             AE.side = (AE.y - cnvs.height / 2) * 1 / 28 + 4 * cnvs.height / 500;
             //xSpd determined by
             AE.x += xSpdByPos(AE, game.speed, 2);
+            if (orient)
+                AE.x -= 5 / 4 * orient * game.moveSpd * AE.y / cnvs.width;
             draw.block(AE);
             //splice if below bottom
 
@@ -264,7 +290,8 @@
                   score: 0,
                   speed: 1.5 * cnvs.height / 500,
                   moveSpd: 2 * cnvs.width / 300,
-                  user: {x: cnvs.width/2, y: cnvs.height - cnvs.height/25, turn: 'straight', amp: 0},
+                  user: {x: cnvs.width/2, y: cnvs.height - cnvs.height/25,
+                         turn: 'straight', amp: 0, orientation: 0},
                   returnUserDir: function() {
                     var u = values.user;
                     if (u.turn === 'straight')
@@ -291,7 +318,13 @@
                   leftCnt: 0,
                   rightCnt: 0
         }
-        playerListen();
+        if (isMobile) {
+            playerListenMobile();
+            values.user.orientation = 0;
+        }
+        else {
+            playerListen();
+        }
         return values;
     }
 
