@@ -70,7 +70,7 @@
 
     function playerListen() {
         addEventListener('keydown', function(evt) {
-            draw.title = function(){};
+            //draw.title = function(){};
             if (evt.keyCode === 37 && game.leftCnt === 0) {
                 game.leftIntvl = intervalFunc(move,1,game);
                 if (game.rightCnt)
