@@ -10,7 +10,7 @@
     var img = new Image();
     img.src = "BlockRunner.png";
     var ua = navigator.userAgent.toLowerCase();
-    var isMobile = true;//ua.indexOf("mobile") > -1; //&& ua.indexOf("android");
+    var isMobile = ua.indexOf("mobile") > -1; //&& ua.indexOf("android");
     var h = window.innerHeight;
     var w = 475 * h / 750;
     var canvasArray = createCanvas(w, h);
