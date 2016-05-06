@@ -203,8 +203,8 @@
         });
 
         if (collisions(game.returnUserDir(),game.cubeArray)) {
-            //clearInterval(game.intervalCubes);
-            //clearInterval(game.intervalUpdate);
+            clearInterval(game.intervalCubes);
+            clearInterval(game.intervalUpdate);
             console.log(game.score);
         }
     }
