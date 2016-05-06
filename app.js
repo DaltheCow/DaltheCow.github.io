@@ -192,22 +192,34 @@
             //splice if below bottom
 
             //add change: scale this too maybe
-            if (AE.y > cnvs.height + Math.pow(game.speed,4))
-
+            if (AE.y > 1.1 * cnvs.height)// + Math.pow(game.speed,2))
                 expired.push(i);
         });
 
         draw.score(game.score);
-
+        expired = sortArray(expired);
         expired.forEach(function(AE) {
             game.cubeArray.splice(AE,1);
         });
 
         if (collisions(game.returnUserDir(),game.cubeArray)) {
-            clearInterval(game.intervalCubes);
-            clearInterval(game.intervalUpdate);
+            //clearInterval(game.intervalCubes);
+            //clearInterval(game.intervalUpdate);
             console.log(game.score);
         }
+    }
+
+    function sortArray(array) {
+        for (var i = 0; i < array.length; i++) {
+            for (var j = i; j < array.length; j++) {
+                if (array[i] < array[j]) {
+                    var temp = array[j];
+                    array[j] = array[i];
+                    array[i] = temp;
+                }
+            }
+        }
+        return array;
     }
     
     function collisions(U,array) {
