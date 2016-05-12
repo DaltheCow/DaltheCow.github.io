@@ -161,8 +161,6 @@
             orient = 30;
         if (orient < -30)
             orient = -30;
-        if (Math.abs(orient) < 3)
-            orient = 0;
         if (isMobile)
             game.user.amp = orient/30;
         orient = orient / 30;
@@ -205,6 +203,7 @@
         if (collisions(game.returnUserDir(),game.cubeArray)) {
             clearInterval(game.intervalCubes);
             clearInterval(game.intervalUpdate);
+            clearInterval(game.intervalSpeed);
             console.log(game.score);
         }
     }
