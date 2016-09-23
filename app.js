@@ -156,7 +156,7 @@
     //Clear screen, draw sky, then grass, then shadows, then user, then blocks, then score.
     //While going through blocks, position/speed is also updated, then splice expired blocks out
     function update() {
-        var expired = [], shadowSize, orient = game.user.orientation;
+        var expired = [], shadowSize, orient = game.user.orientation, currentAr = [];
         if (orient > 30)
             orient = 30;
         if (orient < -30)
@@ -169,6 +169,7 @@
         draw.grass();
         
         game.cubeArray.forEach(function(AE) {
+            currentAr.push(AE);
             if (AE.y >= cnvs.height / 2 + cnvs.height / 50) {
                 shadowSize = -xSpdByPos(AE, 6, 1) * AE.side/2;
                 draw.shadow(game.speed, AE, shadowSize);
@@ -186,11 +187,11 @@
             AE.x += xSpdByPos(AE, game.speed, 2);
             if (orient)
                 AE.x -= 5 / 4 * orient * game.moveSpd * AE.y / cnvs.width;
-            draw.block(AE);
+            draw.block(currentAr[i]);
             //splice if below bottom
 
             //add change: scale this too maybe
-            if (AE.y > 1.1 * cnvs.height)// + Math.pow(game.speed,2))
+            if (currentAr[i].y > 1.1 * cnvs.height)// + Math.pow(game.speed,2))
                 expired.push(i);
         });
 
