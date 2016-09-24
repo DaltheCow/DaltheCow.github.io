@@ -1,79 +1,26 @@
 <!doctype html>
-<html>
-<header>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
     <title>Where Does The Water Go?</title>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-</header>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.0/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.12.0/themes/smoothness/jquery-ui.css" />
+    <!--<script type="text/javascript" src="jquery-3.1.0.min.js"></script>-->
+
+    <style>
+
+    #resizable { width: 150px; height: 150px; overflow:hidden; padding-bottom: 20px; padding-right: 20px; }
+
+    #YTscript { width: 100%; height: 100%; padding: 0.5em; overflow: auto;} 
+
+    </style>
+
+</head>
 <body>
     <div id="player"></div>
-    <div>
-        <span data-item="18">Hey Tim (oh ah). Listen man I cut my hands really bad. Can I borrow some of your gauze?</span>
-        <br/>
-        <span data-item="25">Help yourself.
-        Thanks.</span>
-        <br/>
-        <span data-item="28">(wrapping hands in gauze) (squirting caramel syrup into popcorn)</span>
-        <br/>
-        <span data-item="33">Hey, what are you up to? 
-        Well, I'm making some caramel popcorn for my very own Tairy Greene film festival</span>
-        <br/>
-        <span data-item="38">There's no movie theater here, where's the projector and all the films?</span>
-        <br/>
-        <span data-item="41">Eric I don't need any of that stuff, cuz I've got (looks at camera), The Tairy Greene Machine.</span>
-        <br/>
-        <span data-item="49">Here we go.
-        That thing looks really cool Tim.</span>
-        <br/>
-        <span data-item="51">The Tairy Greene Machine contains every movie, TV show, and public appearance that Tairy Greene ever made.</span>
-        <br/>
-        <span data-item="57">Nice.
-        Bullseye.</span>
-        <br/>
-        <span data-item="58">That thing looks extremely complicated, I mean I can't even operate my VCR at home in my condo.</span>
-        <br/>
-        <span data-item="63">Eric the Tairy Greene Machine is so easy to use even you can use it.</span>
-        <br/>
-        <span data-item="67">Nice.
-        You hit the nail on the head.
-        Also looks like it requires tons of electricity.</span>
-        <br/>
-        <span data-item="71">That's where you're completely wrong Eric. The Tairy Greene Machine operates with good old-fashioned American tap water.</span>
-        <br/>
-        <span data-item="76">Nice.
-        Bullseye.</span>
-        <br/>
-        <span data-item="78">(Silence) Let me show you how it works.</span>
-        <br/>
-        <span data-item="82">What we are gonna do is take this hose. And why don't you turn the water on.
-        Mkay, it's on.
-        Just connect this hose right up there to the Cinco proof faucet.</span>
-        <br/>
-        <span data-item="90">Does it fit on here?
-        Yeah that should should fit f-fine.
-        Do you not. Come on. Let me try it. Alright, we got it, what's the next step?</span>
-        <br/>
-        <span data-item="98">Alright, well we're gonna needa get that temperature to 75 degrees exactly or this boy won't turn on, so why don't you give me a little heat.</span>
-        <br/>
-        <span data-item="103">That's too much, way way too much.
-        The hot. It's all the way hot..on hot.</span>
-        <br/>
-        <span data-item="107">Lose the heat, it's at a hundred degrees, add cool.
-        Hot or Cold!?
-        Hot hot hot.</span>
-        <br/>
-        <span data-item="112">Okay take it off you're good.</span>
-        <br/>
-        <span data-item="113">Alright don't do no' don't do nothing.</span>
-        <br/>
-        <span data-item="115">That's it. Bullseye.</span>
-        <br/>
-        <span data-item="117">There it is!
-        Bullseye.
-        Nice.
-        We're ready to watch one of Tairy's finest films.
-        Enjoy the movie.</span>
-
-
+    <div id="resizable">
+        <div id="YTscript" style="overflow:auto;"></div>
     </div>
 
     <script type="text/javascript">
@@ -102,11 +49,25 @@
             event.target.playVideo();
         }
 
+        var textArray = [{"text":"Hey Tim (oh ah). Listen man I cut my hands really bad. Can I borrow some of your gauze?","time":18},{"text":"Help yourself.\n        Thanks.","time":25},{"text":"(wrapping hands in gauze) (squirting caramel syrup into popcorn)","time":28},{"text":"Hey, what are you up to? \n        Well, I'm making some caramel popcorn for my very own Tairy Greene film festival","time":33},{"text":"There's no movie theater here, where's the projector and all the films?","time":38},{"text":"Eric I don't need any of that stuff, cuz I've got (looks at camera), The Tairy Greene Machine.","time":41},{"text":"Here we go.\n        That thing looks really cool Tim.","time":49},{"text":"The Tairy Greene Machine contains every movie, TV show, and public appearance that Tairy Greene ever made.","time":51},{"text":"Nice.\n        Bullseye.","time":57},{"text":"That thing looks extremely complicated, I mean I can't even operate my VCR at home in my condo.","time":58},{"text":"Eric the Tairy Greene Machine is so easy to use even you can use it.","time":63},{"text":"Nice.\n        You hit the nail on the head.\n        Also looks like it requires tons of electricity.","time":67},{"text":"That's where you're completely wrong Eric. The Tairy Greene Machine operates with good old-fashioned American tap water.","time":71},{"text":"Nice.\n        Bullseye.","time":76},{"text":"(Silence) Let me show you how it works. Right","time":78},{"text":"What we are gonna do is take this hose. And why don't you turn the water on.\n        Mkay, it's on.\n        Just connect this hose right up there to the Cinco proof faucet.","time":82},{"text":"Does it fit on here?\n        Yeah that should should fit f-fine.\n        Do you not. Come on. Let me try it. Alright, we got it, what's the next step?","time":90},{"text":"Alright, well we're gonna needa get that temperature to 75 degrees exactly or this boy won't turn on, so why don't you give me a little heat.","time":98},{"text":"That's too much, way way too much.\n        The hot. It's all the way hot..on hot.","time":103},{"text":"Lose the heat, it's at a hundred degrees, add cool.\n        Hot or Cold!?\n        Hot hot hot.","time":107},{"text":"Okay take it off you're good.","time":112},{"text":"Alright don't do no' don't do nothing.","time":113},{"text":"That's it. Bullseye.","time":115},{"text":"There it is!\n        Bullseye.\n        Nice.\n        We're ready to watch one of Tairy's finest films.\n        Enjoy the movie.","time":117}];
+
+        function createSpan(content, time) {
+            var span = document.createElement('span');
+            span.dataset.time = time;
+            span.innerHTML = content + "<br />";
+            $("#YTscript").append(span);
+        }
+
+        textArray.forEach(function(AE) {
+            createSpan(AE.text,AE.time);
+        })
+
         $("span").click(function() {
-            var time = $(this).data("item");
+            var time = $(this).data("time");
             console.log(time);
             player.seekTo(time);
         });
+        $( "#resizable" ).resizable();
 
 
     </script>
