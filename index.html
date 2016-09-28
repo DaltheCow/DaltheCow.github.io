@@ -3,28 +3,64 @@
 <head>
     <meta charset="utf-8">
     <title>Where Does The Water Go?</title>
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!--<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.0/jquery-ui.min.js"></script>
-    <link rel="stylesheet" href="http://code.jquery.com/ui/1.12.0/themes/smoothness/jquery-ui.css" />
-    <!--<script type="text/javascript" src="jquery-3.1.0.min.js"></script>-->
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.12.0/themes/smoothness/jquery-ui.css" />-->
+    <script type="text/javascript" src="jquery-3.1.0.min.js"></script>
+    <script type="text/javascript" src="jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="jquery.ui.1.12.0.themes.smoothness.jquery-ui.css" />
 
     <style>
 
     #resizable { width: 600px; height: 200px; overflow:hidden; padding-bottom: 20px; padding-right: 20px; }
 
     #YTtranscript { width: 100%; height: 100%; padding: 0.5em; overflow: auto;} 
+    #replayinputs {
+        width:390px;
+        color:#222222;
+        font-family:Arial;
+        background-color:red;
+        border:1px #222222 solid;
+        padding-top:2px;
+    }
+
+    #loopingcb {
+        padding-left: 5px;
+    }
+
+    #length {
+        float:right;
+    }
+    #player {
+        height: 390px;
+    }
+
+    input, button {
+        position: relative;
+        top: -2px;
+    }
 
     </style>
 
 </head>
 <body>
     <div id="player"></div>
+    <div id="replayinputs">
+        <label for="replay" id="loopingcb">Activate Looping</label>
+        <input type="checkbox" id="cboxReplay" name="replay" onchange="updateReplayBox()" />
+        <button onclick="startLoop()">Start Loop</button><!-- add input type=text that holds current loopstart time and can be changed and resubmitted -->
+        <!--<label for="sliderbox">Activate Slider</label>
+        <input type="checkbox" id="cboxSlider" name="sliderbox" onchange="console.log('hi')" />-->
+        <label for="slider" id="slider">10</label>
+        <input type="range" id="length" oninput="showVal(this.value)" onchange="showVal(this.value)" value="10" name="slider" max="30" step="0.1" />
+    </div>
     <div id="resizable">
         <div id="YTtranscript" style="overflow:auto;"></div>
     </div>
 
     <script type="text/javascript">
 
+        //get iframe ready
         var tag = document.createElement('script');
 
         tag.src = "https://www.youtube.com/iframe_api";
@@ -39,42 +75,146 @@
                     width: '640',
                     videoId: "gV6253ap0WU",
                     events: {
-                        'onReady': onPlayerReady
+                        'onReady': onPlayerReady,
+                        'onStateChange': onPlayerStateChange
                     }
                 });
         }
 
         function onPlayerReady(event) {
             player.setPlaybackRate(1);
-            event.target.playVideo();
+            state.loopTime = update("loopTime",player.getCurrentTime());
+            updateTime();
+            //event.target.playVideo();
         }
+        //^^get iframe ready
 
-        var textArray = [{"text":"Hey Tim (oh ah). Listen man I cut my hands really bad. Can I borrow some of your gauze?","time":18},{"text":"Help yourself.\n        Thanks.","time":25},{"text":"(wrapping hands in gauze) (squirting caramel syrup into popcorn)","time":28},{"text":"Hey, what are you up to? \n        Well, I'm making some caramel popcorn for my very own Tairy Greene film festival","time":33},{"text":"There's no movie theater here, where's the projector and all the films?","time":38},{"text":"Eric I don't need any of that stuff, cuz I've got (looks at camera), The Tairy Greene Machine.","time":41},{"text":"Here we go.\n        That thing looks really cool Tim.","time":49},{"text":"The Tairy Greene Machine contains every movie, TV show, and public appearance that Tairy Greene ever made.","time":51},{"text":"Nice.\n        Bullseye.","time":57},{"text":"That thing looks extremely complicated, I mean I can't even operate my VCR at home in my condo.","time":58},{"text":"Eric the Tairy Greene Machine is so easy to use even you can use it.","time":63},{"text":"Nice.\n        You hit the nail on the head.\n        Also looks like it requires tons of electricity.","time":67},{"text":"That's where you're completely wrong Eric. The Tairy Greene Machine operates with good old-fashioned American tap water.","time":71},{"text":"Nice.\n        Bullseye.","time":76},{"text":"(Silence) Let me show you how it works. Right","time":78},{"text":"What we are gonna do is take this hose. And why don't you turn the water on.\n        Mkay, it's on.\n        Just connect this hose right up there to the Cinco proof faucet.","time":82},{"text":"Does it fit on here?\n        Yeah that should should fit f-fine.\n        Do you not. Come on. Let me try it. Alright, we got it, what's the next step?","time":90},{"text":"Alright, well we're gonna needa get that temperature to 75 degrees exactly or this boy won't turn on, so why don't you give me a little heat.","time":98},{"text":"That's too much, way way too much.\n        The hot. It's all the way hot..on hot.","time":103},{"text":"Lose the heat, it's at a hundred degrees, add cool.\n        Hot or Cold!?\n        Hot hot hot.","time":107},{"text":"Okay take it off you're good.","time":112},{"text":"Alright don't do no' don't do nothing.","time":113},{"text":"That's it. Bullseye.","time":115},{"text":"There it is!\n        Bullseye.\n        Nice.\n        We're ready to watch one of Tairy's finest films.\n        Enjoy the movie.","time":117}];
+        const textArray = [{"text":"Hey Tim (oh ah). Listen man I cut my hands really bad. Can I borrow some of your gauze?","time":18},{"text":"Help yourself. Thanks.","time":25},{"text":"(wrapping hands in gauze) (squirting caramel syrup into popcorn)","time":28},{"text":"Hey, what are you up to? Well, I'm making some caramel popcorn for my very own Tairy Greene film festival","time":33},{"text":"There's no movie theater here, where's the projector and all the films?","time":38},{"text":"Eric I don't need any of that stuff, cuz I've got (looks at camera), The Tairy Greene Machine.","time":41},{"text":"Here we go. That thing looks really cool Tim.","time":49},{"text":"The Tairy Greene Machine contains every movie, TV show, and public appearance that Tairy Greene ever made.","time":51},{"text":"Nice. Bullseye.","time":57},{"text":"That thing looks extremely complicated, I mean I can't even operate my VCR at home in my condo.","time":58},{"text":"Eric the Tairy Greene Machine is so easy to use even you can use it.","time":63},{"text":"Nice. You hit the nail on the head. Also looks like it requires tons of electricity.","time":67},{"text":"That's where you're completely wrong Eric. The Tairy Greene Machine operates with good old-fashioned American tap water.","time":71},{"text":"Nice. Bullseye.","time":76},{"text":"(Silence) Let me show you how it works. Right","time":78},{"text":"What we are gonna do is take this hose. And why don't you turn the water on. Mkay, it's on. Just connect this hose right up there to the Cinco proof faucet.","time":82},{"text":"Does it fit on here? Yeah that should should fit f-fine. Do you not. Come on. Let me try it. Alright, we got it, what's the next step?","time":90},{"text":"Alright, well we're gonna needa get that temperature to 75 degrees exactly or this boy won't turn on, so why don't you give me a little heat.","time":98},{"text":"That's too much, way way too much. The hot. It's all the way hot..on hot.","time":103},{"text":"Lose the heat, it's at a hundred degrees, add cool. Hot or Cold!? Hot hot hot.","time":107},{"text":"Okay take it off you're good.","time":112},{"text":"Alright don't do no' don't do nothing.","time":113},{"text":"That's it. Bullseye.","time":115},{"text":"There it is! Bullseye. Nice. We're ready to watch one of Tairy's finest films. Enjoy the movie.","time":117}];
 
         function createSpan(content, time) {
             var span = document.createElement('span');
             span.dataset.time = time;
-            span.innerHTML = content + "<br />";
+            span.innerHTML = time + ": " + content + "<br />";
             $("#YTtranscript").append(span);
         }
 
-        textArray.forEach(function(AE) {
-            createSpan(AE.text,AE.time);
-        })
-
-        $("span").click(function() {
-            var time = $(this).data("time");
-            console.log(time);
-            player.seekTo(time);
-        });
-        $( "#resizable" ).resizable();
-
-        var ua = navigator.userAgent.toLowerCase();
-        var isMobile = ua.indexOf("mobile") > -1;
-
-        if (isMobile) {
-            $("#YTtranscript").css("font-size","20px");
+        function showVal(newVal){
+            state.slider = update("slider", newVal);
+            if (newVal < 10)
+                newVal = "&nbsp" + "&nbsp" + newVal;
+            $("#slider").html(newVal);
         }
+
+        function onPlayerStateChange(event) {
+            //1=player 2=paused 3=buffering
+            //console.log(event.data);
+        }
+
+
+        function startLoop(time) {
+            if (time === undefined)
+                time = player.getCurrentTime();
+
+            state.loopTime = update("loopTime", time);
+
+            function loop() {
+                if (time === state.loopTime && state.cboxreplay) {
+                    if (state.currentTime >= state.loopTime + state.slider){
+                        //console.log(state.currentTime)
+                        player.seekTo(state.loopTime);
+                    }
+                    requestAnimationFrame(loop)
+                }
+            }
+            loop();
+        }
+
+        function update(obj, val) {
+            switch(obj) {
+                case "loopTime": return val;
+                    break;
+                case "slider": return Number(val);
+                    break;
+                case "cboxreplay": return !state.cboxreplay;
+                    break;
+                case "cboxslider": return !state.cboxslider;
+                    break;
+                case "currentTime": return player.getCurrentTime();
+                    break;
+            }
+        }
+
+        var state = {
+            loopTime: undefined,
+            slider: undefined,
+            cboxreplay: false,
+            cboxslider: false,
+            currentTime: 0
+        }
+
+        function initialize() {
+            textArray.forEach(function(AE) {
+                createSpan(AE.text,AE.time);
+            });
+
+            $("span").click(function() {
+                var time = $(this).data("time");
+                player.seekTo(time);
+                if (state.cboxreplay) {
+                    startLoop(time);
+                }
+            });
+
+            $( "#resizable" ).resizable();
+
+            var ua = navigator.userAgent.toLowerCase();
+            var isMobile = ua.indexOf("mobile") > -1;
+
+            if (isMobile) {
+                $("#YTtranscript").css("font-size","20px");
+            }
+
+            state.loopTime = update("loopTime",0);
+            state.slider = update("slider",$("#length").val());
+        }
+        initialize();
+
+        function updateReplayBox() {
+            state.cboxreplay = update('cboxreplay')
+        }
+        var now, fps=20, delta, interval = 1000/fps, then = Date.now();
+
+        function updateTime() {
+            now = Date.now();
+            delta = now - then;
+
+            if (delta > interval) {
+                state.currentTime = update("currentTime");
+                then = now - (delta % interval)
+            }
+            requestAnimationFrame(updateTime);
+
+        }
+
+
+
+        //replay feature:
+            /*
+                a box can be checked to turn replay on and another box will appear for turning on slider bar. slider bar is used to set length of replay time.
+                if slide bar is not check the default will just be to replay the current line. (or set to replay whole video)
+            */
+        //$( this ).removeClass( "big-blue", 1000, "easeInBack" );
+
+        //if (checkbox.checked) then activate replay feature
+        //when replay is active it will start a replay from wherever the time is and moves it whenever time is changed
+        //when a replay is running untouched, once it reaches the end time the replayover function is executed sending the video back to the same time.
+        //the only way to start a replay segment is to click on a span or hit the start replay loop button.
+        //once it is started it logs the time
+
+        //change states. input a tag with a value. if no value is inputed return 
+        //update: startLoop is called. state.loopTime = update("loopTime",[])
+
+
 
     </script>
 </body>
