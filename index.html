@@ -12,11 +12,25 @@
 
     <style>
 
-    #resizable { width: 600px; height: 200px; overflow:hidden; padding-bottom: 20px; padding-right: 20px; }
+    #resizable {
+        width: 600px;
+        height: 200px;
+        overflow:hidden;
+        padding-bottom: 20px;
+        padding-right: 20px; 
+    }
 
-    #YTtranscript { width: 100%; height: 100%; padding: 0.5em; overflow: auto;} 
+    #YTtranscript {
+        width: 100%;
+        height: 100%;
+        padding: 0.5em;
+        overflow: auto;
+        border-right: 1px solid black;
+        border-bottom: 1px solid black;
+    } 
+
     #replayinputs {
-        width:590px;
+        width:570px;
         color:#222222;
         font-family:Arial;
         background-color:red;
@@ -33,6 +47,7 @@
         width:300px;
 
     }
+
     #player {
         height: 390px;
     }
@@ -50,17 +65,52 @@
     <div id="replayinputs">
         <label for="replay" id="loopingcb">Activate Looping</label>
         <input type="checkbox" id="cboxReplay" name="replay" onchange="updateReplayBox()" />
-        <button onclick="startLoop()">Start Loop</button><!-- add input type=text that holds current loopstart time and can be changed and resubmitted -->
-        <!--<label for="sliderbox">Activate Slider</label>
-        <input type="checkbox" id="cboxSlider" name="sliderbox" onchange="console.log('hi')" />-->
+        <button onclick="startLoop()">Start Loop</button>
         <label for="slider" id="slider">10</label>
         <input type="range" id="length" oninput="showVal(this.value)" onchange="showVal(this.value)" value="10" name="slider" max="30" step="0.1" />
     </div>
     <div id="resizable">
         <div id="YTtranscript" style="overflow:auto;"></div>
     </div>
+    <form id="search">
+        <label for="newVid">Enter video URL/id</label>
+        <input type="text" id="url" name="newVid" />
+        <input type="submit" style="display:none"/>
+    </form>
 
     <script type="text/javascript">
+
+        function newYT(id) {
+            player.cueVideoById({videoId:id})
+        }
+
+        function extract(url) {
+            var myregexp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
+            if(myregexp.test(url)) {
+                var id = url.slice(url.indexOf("v=") + 2 , url.length);
+                if (id === -1)
+                    id = url;
+                if (/[a-zA-Z0-9_-]{11}/.test(id))
+                    return id;
+                else {
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        $("#search").submit(function(event) {
+            event.preventDefault();
+            var url = $("#url").val();
+            if(url){
+                var id = extract(url);
+                if (id) {
+                    newYT(id);
+                }
+            }
+            $("#url").val('');
+        });
+
 
         //get iframe ready
         var tag = document.createElement('script');
@@ -69,13 +119,13 @@
         var firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-        var player;
+        var player, id = "gV6253ap0WU";
 
         function onYouTubeIframeAPIReady() {
                 player = new YT.Player('player', {
                     height: '390',
                     width: '640',
-                    videoId: "gV6253ap0WU",
+                    videoId: id,
                     events: {
                         'onReady': onPlayerReady,
                         'onStateChange': onPlayerStateChange
@@ -86,12 +136,16 @@
         function onPlayerReady(event) {
             player.setPlaybackRate(1);
             state.loopTime = update("loopTime",player.getCurrentTime());
+            initialize();
             updateTime();
             //event.target.playVideo();
         }
+
         //^^get iframe ready
 
-        const textArray = [{"text":"Hey Tim (oh ah). Listen man I cut my hands really bad. Can I borrow some of your gauze?","time":18},{"text":"Help yourself. Thanks.","time":25},{"text":"(wrapping hands in gauze) (squirting caramel syrup into popcorn)","time":28},{"text":"Hey, what are you up to? Well, I'm making some caramel popcorn for my very own Tairy Greene film festival","time":33},{"text":"There's no movie theater here, where's the projector and all the films?","time":38},{"text":"Eric I don't need any of that stuff, cuz I've got (looks at camera), The Tairy Greene Machine.","time":41},{"text":"Here we go. That thing looks really cool Tim.","time":49},{"text":"The Tairy Greene Machine contains every movie, TV show, and public appearance that Tairy Greene ever made.","time":51},{"text":"Nice. Bullseye.","time":57},{"text":"That thing looks extremely complicated, I mean I can't even operate my VCR at home in my condo.","time":58},{"text":"Eric the Tairy Greene Machine is so easy to use even you can use it.","time":63},{"text":"Nice. You hit the nail on the head. Also looks like it requires tons of electricity.","time":67},{"text":"That's where you're completely wrong Eric. The Tairy Greene Machine operates with good old-fashioned American tap water.","time":71},{"text":"Nice. Bullseye.","time":76},{"text":"(Silence) Let me show you how it works. Right","time":78},{"text":"What we are gonna do is take this hose. And why don't you turn the water on. Mkay, it's on. Just connect this hose right up there to the Cinco proof faucet.","time":82},{"text":"Does it fit on here? Yeah that should should fit f-fine. Do you not. Come on. Let me try it. Alright, we got it, what's the next step?","time":90},{"text":"Alright, well we're gonna needa get that temperature to 75 degrees exactly or this boy won't turn on, so why don't you give me a little heat.","time":98},{"text":"That's too much, way way too much. The hot. It's all the way hot..on hot.","time":103},{"text":"Lose the heat, it's at a hundred degrees, add cool. Hot or Cold!? Hot hot hot.","time":107},{"text":"Okay take it off you're good.","time":112},{"text":"Alright don't do no' don't do nothing.","time":113},{"text":"That's it. Bullseye.","time":115},{"text":"There it is! Bullseye. Nice. We're ready to watch one of Tairy's finest films. Enjoy the movie.","time":117}];
+        var now, fps=20, delta, interval = 1000/fps, then = Date.now();
+
+        const youtube = [{"id": "gV6253ap0WU", "transcript" : [{"text":"Hey Tim (oh ah). Listen man I cut my hands really bad. Can I borrow some of your gauze?","time":18},{"text":"Help yourself. Thanks.","time":25},{"text":"(wrapping hands in gauze) (squirting caramel syrup into popcorn)","time":28},{"text":"Hey, what are you up to? Well, I'm making some caramel popcorn for my very own Tairy Greene film festival","time":33},{"text":"There's no movie theater here, where's the projector and all the films?","time":38},{"text":"Eric I don't need any of that stuff, cuz I've got (looks at camera), The Tairy Greene Machine.","time":41},{"text":"Here we go. That thing looks really cool Tim.","time":49},{"text":"The Tairy Greene Machine contains every movie, TV show, and public appearance that Tairy Greene ever made.","time":51},{"text":"Nice. Bullseye.","time":57},{"text":"That thing looks extremely complicated, I mean I can't even operate my VCR at home in my condo.","time":58},{"text":"Eric the Tairy Greene Machine is so easy to use even you can use it.","time":63},{"text":"Nice. You hit the nail on the head. Also looks like it requires tons of electricity.","time":67},{"text":"That's where you're completely wrong Eric. The Tairy Greene Machine operates with good old-fashioned American tap water.","time":71},{"text":"Nice. Bullseye.","time":76},{"text":"(Silence) Let me show you how it works. Right","time":78},{"text":"What we are gonna do is take this hose. And why don't you turn the water on. Mkay, it's on. Just connect this hose right up there to the Cinco proof faucet.","time":82},{"text":"Does it fit on here? Yeah that should should fit f-fine. Do you not. Come on. Let me try it. Alright, we got it, what's the next step?","time":90},{"text":"Alright, well we're gonna needa get that temperature to 75 degrees exactly or this boy won't turn on, so why don't you give me a little heat.","time":98},{"text":"That's too much, way way too much. The hot. It's all the way hot..on hot.","time":103},{"text":"Lose the heat, it's at a hundred degrees, add cool. Hot or Cold!? Hot hot hot.","time":107},{"text":"Okay take it off you're good.","time":112},{"text":"Alright don't do no' don't do nothing.","time":113},{"text":"That's it. Bullseye.","time":115},{"text":"There it is! Bullseye. Nice. We're ready to watch one of Tairy's finest films. Enjoy the movie.","time":117}]}];
 
         function createSpan(content, time) {
             var span = document.createElement('span');
@@ -109,27 +163,9 @@
 
         function onPlayerStateChange(event) {
             //1=player 2=paused 3=buffering
-            //console.log(event.data);
+            //event.data
         }
 
-
-        function startLoop(time) {
-            if (time === undefined)
-                time = player.getCurrentTime();
-
-            state.loopTime = update("loopTime", time);
-
-            function loop() {
-                if (time === state.loopTime && state.cboxreplay) {
-                    if (state.currentTime >= state.loopTime + state.slider){
-                        //console.log(state.currentTime)
-                        player.seekTo(state.loopTime);
-                    }
-                    requestAnimationFrame(loop)
-                }
-            }
-            loop();
-        }
 
         function update(obj, val) {
             switch(obj) {
@@ -155,7 +191,7 @@
         }
 
         function initialize() {
-            textArray.forEach(function(AE) {
+            youtube[0].transcript.forEach(function(AE) {
                 createSpan(AE.text,AE.time);
             });
 
@@ -179,12 +215,28 @@
             state.loopTime = update("loopTime",0);
             state.slider = update("slider",$("#length").val());
         }
-        initialize();
+
+        function startLoop(time) {
+            if (time === undefined)
+                time = player.getCurrentTime();
+
+            state.loopTime = update("loopTime", time);
+
+            function loop() {
+                if (time === state.loopTime && state.cboxreplay) {
+                    if (state.currentTime >= state.loopTime + state.slider){
+                        //console.log(state.currentTime)
+                        player.seekTo(state.loopTime);
+                    }
+                    requestAnimationFrame(loop)
+                }
+            }
+            loop();
+        }
 
         function updateReplayBox() {
             state.cboxreplay = update('cboxreplay')
         }
-        var now, fps=20, delta, interval = 1000/fps, then = Date.now();
 
         function updateTime() {
             now = Date.now();
@@ -195,26 +247,59 @@
                 then = now - (delta % interval)
             }
             requestAnimationFrame(updateTime);
-
         }
 
+        function newYT(id) {
+            $("#YTtranscript").empty();
+            var index = -1;
+            youtube.some(function(AE, i) {
+                if (id === AE.id) {
+                    index = i;
+                }
+                return index != -1;
+            });
+            if (index != -1) {
+                youtube[index].transcript.forEach(function(AE) {
+                createSpan(AE.text,AE.time);
+            });
+            }
+            player.cueVideoById({videoId:id})
+        }
+
+        function extract(url) {
+            var myregexp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
+            if(myregexp.test(url)) {
+                var start = url.indexOf("v="), id;
+                if (start != -1)
+                    var end = (url).indexOf("&")
+                    if (end === -1)
+                        end = url.length;
+                    id = url.slice(url.indexOf("v=") + 2 , end);
+                if (start === -1)
+                    id = url;
+                if (/[a-zA-Z0-9_-]{11}/.test(id))
+                    return id;
+                else {
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        $("#search").submit(function(event) {
+            event.preventDefault();
+            var url = $("#url").val();
+            if(url){
+                var id = extract(url);
+                if (id) {
+                    newYT(id);
+                }
+            }
+            $("#url").val('');
+        });
 
 
-        //replay feature:
-            /*
-                a box can be checked to turn replay on and another box will appear for turning on slider bar. slider bar is used to set length of replay time.
-                if slide bar is not check the default will just be to replay the current line. (or set to replay whole video)
-            */
         //$( this ).removeClass( "big-blue", 1000, "easeInBack" );
-
-        //if (checkbox.checked) then activate replay feature
-        //when replay is active it will start a replay from wherever the time is and moves it whenever time is changed
-        //when a replay is running untouched, once it reaches the end time the replayover function is executed sending the video back to the same time.
-        //the only way to start a replay segment is to click on a span or hit the start replay loop button.
-        //once it is started it logs the time
-
-        //change states. input a tag with a value. if no value is inputed return 
-        //update: startLoop is called. state.loopTime = update("loopTime",[])
 
 
 
