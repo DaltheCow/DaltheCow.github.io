@@ -190,8 +190,8 @@
             currentTime: 0
         }
 
-        function initialize() {
-            youtube[0].transcript.forEach(function(AE) {
+        function newTranscript(i) {
+            youtube[i].transcript.forEach(function(AE) {
                 createSpan(AE.text,AE.time);
             });
 
@@ -202,6 +202,11 @@
                     startLoop(time);
                 }
             });
+        }
+
+        function initialize() {
+
+            newTranscript(0);
 
             $( "#resizable" ).resizable();
 
@@ -259,9 +264,7 @@
                 return index != -1;
             });
             if (index != -1) {
-                youtube[index].transcript.forEach(function(AE) {
-                createSpan(AE.text,AE.time);
-            });
+                newTranscript(index);
             }
             player.cueVideoById({videoId:id})
         }
