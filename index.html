@@ -44,7 +44,7 @@
 
     #length {
         float:right;
-        width:300px;
+        width:250px;
 
     }
 
@@ -54,7 +54,11 @@
 
     input, button {
         position: relative;
-        top: -2px;
+        top: -1.5px;
+    }
+
+    .slideCtrl {
+        float:right;
     }
 
     </style>
@@ -66,8 +70,10 @@
         <label for="replay" id="loopingcb">Activate Looping</label>
         <input type="checkbox" id="cboxReplay" name="replay" onchange="updateReplayBox()" />
         <button onclick="startLoop()">Start Loop</button>
+        <button class="slideCtrl" onclick="increment()" >+</button><button class="slideCtrl" onclick="decrement()">-</button>
         <label for="slider" id="slider">10</label>
-        <input type="range" id="length" oninput="showVal(this.value)" onchange="showVal(this.value)" value="10" name="slider" max="30" step="0.1" />
+        <input type="range" id="length" oninput="showVal(this.value)" onchange="showVal(this.value)" value="10" name="slider" min="0" max="20" step="0.1" />
+        
     </div>
     <div id="resizable">
         <div id="YTtranscript" style="overflow:auto;"></div>
@@ -79,38 +85,6 @@
     </form>
 
     <script type="text/javascript">
-
-        function newYT(id) {
-            player.cueVideoById({videoId:id})
-        }
-
-        function extract(url) {
-            var myregexp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
-            if(myregexp.test(url)) {
-                var id = url.slice(url.indexOf("v=") + 2 , url.length);
-                if (id === -1)
-                    id = url;
-                if (/[a-zA-Z0-9_-]{11}/.test(id))
-                    return id;
-                else {
-                    return false;
-                }
-            }
-            return false;
-        }
-
-        $("#search").submit(function(event) {
-            event.preventDefault();
-            var url = $("#url").val();
-            if(url){
-                var id = extract(url);
-                if (id) {
-                    newYT(id);
-                }
-            }
-            $("#url").val('');
-        });
-
 
         //get iframe ready
         var tag = document.createElement('script');
@@ -300,6 +274,26 @@
             }
             $("#url").val('');
         });
+
+        function increment() {
+            var val = $("#length").prop('max');
+            $("#length").prop('max', Number(val) + 20 );
+            $("#length").prop('min', Number(val) );
+            $("#slider").html($("#length").val());
+        }
+
+        function decrement() {
+            var val = $("#length").prop('min');
+            if (val > 0){
+                $("#length").prop('min', Number(val) );
+                $("#length").prop('max', Number(val) - 20 );
+                $("#slider").html($("#length").val());
+            }
+        }
+
+
+
+
 
 
         //$( this ).removeClass( "big-blue", 1000, "easeInBack" );
