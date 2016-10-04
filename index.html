@@ -285,8 +285,8 @@
         function decrement() {
             var val = $("#length").prop('min');
             if (val > 0){
-                $("#length").prop('min', Number(val) );
-                $("#length").prop('max', Number(val) - 20 );
+                $("#length").prop('min', Number(val) -20 );
+                $("#length").prop('max', Number(val) );
                 $("#slider").html($("#length").val());
             }
         }
