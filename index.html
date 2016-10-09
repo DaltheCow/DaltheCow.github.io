@@ -12,6 +12,32 @@
 
     <style>
 
+    ul {
+        list-style:none;
+        margin:0;
+        padding:0;
+    }
+
+    li {
+        list-style:none;
+        margin:0;
+        padding:0;
+    }
+
+
+
+    button::-moz-focus-inner {
+        border:0;
+        padding:0;
+    }
+
+    @-moz-document url-prefix() { 
+      button {
+        padding:0;
+        margin:0;
+      }
+    }
+
     #resizable {
         width: 600px;
         height: 200px;
@@ -30,7 +56,7 @@
     } 
 
     #replayinputs {
-        width:570px;
+        width:580px;
         color:#222222;
         font-family:Arial;
         background-color:red;
@@ -61,6 +87,49 @@
         float:right;
     }
 
+    #playershortcuts {
+        padding-left: 5px;
+        position: relative;
+        width: 120px;
+    }
+
+    #playershortcuts:hover > ul {
+        display:initial;
+
+    }
+
+    #playershortcuts:hover > div {
+        color:white;
+    }
+
+    #playershortcuts ul {
+        width: 230px;
+        background-color: lightgray;
+        z-index:1;
+    }
+
+    #shortcutskey li :hover {
+        background-color: white;
+    }
+
+    #shortcutskey {
+        position: absolute;
+        display: none;
+    }
+    .zindex0 {
+        position: relative;
+        z-index: 0;
+    }
+
+    #consoleY {
+        width:95px;
+    }
+
+    .block {
+        display:inline-block;
+    }
+
+
     </style>
 
 </head>
@@ -73,12 +142,25 @@
         <button class="slideCtrl" onclick="increment()" >+</button><button class="slideCtrl" onclick="decrement()">-</button>
         <label for="slider" id="slider">10</label>
         <input type="range" id="length" oninput="showVal(this.value)" onchange="showVal(this.value)" value="10" name="slider" min="0" max="20" step="0.1" />
-        
+        <div id="playershortcuts" class="block">
+            <div>Player Shortcuts</div>
+            <ul id="shortcutskey">
+                <li>"j" = rewind</li>
+                <li>"k" = pause</li>
+                <li>"l" = fastforward</li>
+                <li>"[" = slow down playback speed</li>
+                <li>"]" = speed up playback speed</li>
+                <li>"-" = decrease skip rate</li>
+                <li>"=" = decrease skip rate</li>
+            </ul>
+        </div>
+        <div class="block" id="consoleY">Speed: 1x</div>
+        <div class="block">Skip Rate: <span id="skipFactor">10 seconds</span></div>
     </div>
-    <div id="resizable">
+    <div id="resizable" class="zindex0">
         <div id="YTtranscript" style="overflow:auto;"></div>
     </div>
-    <form id="search">
+    <form id="search" class="zindex0">
         <label for="newVid">Enter video URL/id</label>
         <input type="text" id="url" name="newVid" />
         <input type="submit" style="display:none"/>
@@ -123,8 +205,15 @@
 
         function createSpan(content, time) {
             var span = document.createElement('span');
-            span.dataset.time = time;
-            span.innerHTML = time + ": " + content + "<br />";
+            if (time) {
+                span.dataset.time = time;
+                time = time + ": ";
+            }
+            else {
+                time = "";
+            }
+
+            span.innerHTML = time + content + "<br />";
             $("#YTtranscript").append(span);
         }
 
@@ -238,7 +327,12 @@
                 return index != -1;
             });
             if (index != -1) {
+                $("#resizable").height("200px");
                 newTranscript(index);
+            }
+            else {
+                $("#resizable").height("15px");
+                createSpan("no transcript to display");
             }
             player.cueVideoById({videoId:id})
         }
@@ -260,7 +354,7 @@
                     return false;
                 }
             }
-            return false;
+            return url;
         }
 
         $("#search").submit(function(event) {
@@ -277,9 +371,11 @@
 
         function increment() {
             var val = $("#length").prop('max');
-            $("#length").prop('max', Number(val) + 20 );
-            $("#length").prop('min', Number(val) );
-            $("#slider").html($("#length").val());
+            if (val < 99999) {
+                $("#length").prop('max', Number(val) + 10000 );
+                $("#length").prop('min', Number(val) );
+                $("#slider").html($("#length").val());
+            }
         }
 
         function decrement() {
@@ -291,7 +387,63 @@
             }
         }
 
+        var array = [.25,.5,1,1.25,1.5,2];
+        //219 221
 
+        var playBackState = 1, factor = 10;
+
+        document.addEventListener('keypress', function(event) {
+            playBackState = player.getPlaybackRate();
+            var speed = -10;
+
+            if (event.keyCode === 91 && playBackState > .25) {
+                speed = array.indexOf(playBackState)-1;
+                player.setPlaybackRate(array[speed]);
+                playBackState = array[speed];
+                setTimeout(function() {document.getElementById("consoleY").innerHTML = "Speed: " + playBackState + "x";}, 100);
+            }
+            else if(event.keyCode === 93 && playBackState < 2) {
+                speed = array.indexOf(playBackState)+1;
+                player.setPlaybackRate(array[speed]);
+                playBackState = array[speed];
+                setTimeout(function() {document.getElementById("consoleY").innerHTML = "Speed: " + playBackState + "x";}, 100);
+            }
+
+            var x = factor * playBackState;
+
+            if (event.keyCode === 106) {
+                player.seekTo(player.getCurrentTime() - x, true);
+            }
+            else if (event.keyCode === 108) {
+                player.seekTo(player.getCurrentTime() + x, true);
+            }
+
+            if (event.keyCode === 107) {
+                //player.getPlayerState() 1=playing 2=paused
+                var playerState = player.getPlayerState();
+                if (playerState === 1) {
+                    player.pauseVideo();
+                }
+                else if (playerState ===2) {
+                    player.playVideo();
+                }
+            }
+
+            if (event.keyCode === 45) {
+                if (factor > 1){
+                    factor --;
+                    x = factor * playBackState;
+                }
+            }
+            else if (event.keyCode === 61) {
+                if (factor < 20) {
+                    factor ++;
+                    x = factor * playBackState;
+                    console.log('factor ' + factor + ' playBackState ' + playBackState + ' x ' + x);
+                }
+            }
+            setTimeout(function() {document.getElementById("skipFactor").innerHTML = x + " seconds";}, 100);
+        });
 
 
 
