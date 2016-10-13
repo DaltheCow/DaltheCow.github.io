@@ -167,7 +167,7 @@
         font-size: 8px;
     }
 
-    #search {
+    #url-input {
         margin-top: 8px;
         width: 200px;
     }
@@ -223,14 +223,13 @@
         <div id="resizable" class="zindex0">
             <div id="YTtranscript"></div>
         </div>
-        <div id="search" class="zindex0 input-group">
-        <!--<form id="search" class="zindex0">-->
+        <form id="search">
+            <div id="url-input" class="zindex0 input-group">
             <span class="input-group-addon"><i class="glyphicon glyphicon-link"></i></span>
             <input type="text" class="input-text form-control" id="url" name="newVid" placeholder="Enter video URL/id" />
             <input class="input-submit" type="submit" />
-        <!--</form>-->
-        </div>
-
+            </div>
+        </form>
     </div>
     <div id="sidebar">
         
@@ -389,6 +388,7 @@
 
             $("#search").submit(function(event) {
                 event.preventDefault();
+                console.log('here')
                 var url = $("#url").val();
                 if(url){
                     var id = extract(url);
@@ -419,7 +419,7 @@
 
             $(document).click(function(){
                 if (state.sidebar) {
-
+                    //make it so clicking anywhere outside of sidebar closes it
                 }
             });
 
