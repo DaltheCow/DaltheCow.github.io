@@ -24,14 +24,12 @@
         padding:0;
     }
 
-
-
     button::-moz-focus-inner {
         border:0;
         padding:0;
     }
 
-    @-moz-document url-prefix() { 
+    @-moz-document url-prefix() {
       button {
         padding:0;
         margin:0;
@@ -42,8 +40,8 @@
         width: 600px;
         height: 200px;
         overflow:hidden;
-        padding-bottom: 20px;
-        padding-right: 20px; 
+        /*padding-bottom: 20px;
+        padding-right: 20px; */
     }
 
     #YTtranscript {
@@ -53,10 +51,11 @@
         overflow: auto;
         border-right: 1px solid black;
         border-bottom: 1px solid black;
+        overflow:auto;
     } 
 
     #replayinputs {
-        width:580px;
+        width:565px;
         color:#222222;
         font-family:Arial;
         background-color:red;
@@ -71,16 +70,20 @@
     #length {
         float:right;
         width:250px;
+    }
 
+    #length:hover {
+        cursor:pointer;
     }
 
     #player {
         height: 390px;
     }
 
-    input, button {
+    #length {
         position: relative;
-        top: -1.5px;
+        top: 4px;
+        margin-right: 3px;
     }
 
     .slideCtrl {
@@ -129,6 +132,59 @@
         display:inline-block;
     }
 
+    #sidebar {
+        height:100%;
+        background-color:transparent;
+        position:fixed;
+        right:0;
+        top:0;
+    }
+
+    #sidebar-ctrl {
+        float:right;
+        height:100%;
+        width:15px;
+        background-color:transparent;
+    }
+
+    #sidebar-ctrl:hover {
+        background-color:pink !important;
+    }
+
+    #sidebar-ctrl:hover #arrow {
+        font-size: 15px;
+    }
+
+    #arrow-ctnr {
+        height:100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    #arrow {
+        align-self: center;
+        font-size: 8px;
+    }
+
+    #search {
+        margin-top: 8px;
+    }
+
+    #plusbtn {
+        margin-right:3px
+    }
+
+    .input-submit {
+        display:none;
+    }
+
+    #YTsearch {
+        height: 100%;
+        width:250px;
+        background-color:#E7E7E7;
+        float:right;
+        display:none;
+    }
 
     </style>
 
@@ -139,7 +195,7 @@
         <label for="replay" id="loopingcb">Activate Looping</label>
         <input type="checkbox" id="cboxReplay" name="replay" onchange="updateReplayBox()" />
         <button onclick="startLoop()">Start Loop</button>
-        <button class="slideCtrl" onclick="increment()" >+</button><button class="slideCtrl" onclick="decrement()">-</button>
+        <button class="slideCtrl" id="plusbtn" onclick="increment()" >+</button><button class="slideCtrl" onclick="decrement()">-</button>
         <label for="slider" id="slider">10</label>
         <input type="range" id="length" oninput="showVal(this.value)" onchange="showVal(this.value)" value="10" name="slider" min="0" max="20" step="0.1" />
         <div id="playershortcuts" class="block">
@@ -158,13 +214,34 @@
         <div class="block">Skip Rate: <span id="skipFactor">10 seconds</span></div>
     </div>
     <div id="resizable" class="zindex0">
-        <div id="YTtranscript" style="overflow:auto;"></div>
+        <div id="YTtranscript"></div>
     </div>
     <form id="search" class="zindex0">
-        <label for="newVid">Enter video URL/id</label>
-        <input type="text" id="url" name="newVid" />
-        <input type="submit" style="display:none"/>
+        <label for="newVid">Load New Video</label>
+        <input type="text" class="input-text" id="url" name="newVid" placeholder="Enter video URL/id" />
+        <input class="input-submit" type="submit" />
     </form>
+
+    <div id="sidebar"><!-- make this fixed; name: sidebar-->
+        
+        <div id="YTsearch"> <!-- search area -->
+            <div>
+                <!-- text input label -->
+                <!-- text input -->
+                <!-- text input submit (input-text class) -->
+            </div>
+            <div> <!-- results -->
+                <!-- title -->
+                <!-- video thumbnail -->
+            </div>
+        </div>
+
+        <div id="sidebar-ctrl"> <!-- rename: sidebar-ctrl -->
+            <div id="arrow-ctnr"><!--float: left instead of fixed-->
+                <div id="arrow" class='glyphicon glyphicon-menu-left'></div>
+            </div>
+        </div>
+    </div>
 
     <script type="text/javascript">
 
@@ -197,7 +274,6 @@
             //event.target.playVideo();
         }
 
-        //^^get iframe ready
 
         var now, fps=20, delta, interval = 1000/fps, then = Date.now();
 
@@ -212,7 +288,6 @@
             else {
                 time = "";
             }
-
             span.innerHTML = time + content + "<br />";
             $("#YTtranscript").append(span);
         }
@@ -242,6 +317,12 @@
                     break;
                 case "currentTime": return player.getCurrentTime();
                     break;
+                //skip rate
+                //video id
+                case "listening": return val;
+                    break;
+                case "sidebar": return !state.sidebar;
+                    break;
             }
         }
 
@@ -250,13 +331,17 @@
             slider: undefined,
             cboxreplay: false,
             cboxslider: false,
-            currentTime: 0
+            currentTime: 0,
+            listening: true,
+            sidebar: false
         }
 
         function newTranscript(i) {
             youtube[i].transcript.forEach(function(AE) {
                 createSpan(AE.text,AE.time);
             });
+
+            $("span").unbind("click");
 
             $("span").click(function() {
                 var time = $(this).data("time");
@@ -267,12 +352,66 @@
             });
         }
 
+        function hidesidebar(elem) {
+            $("#YTsearch").hide();
+            $(elem).css("background-color","transparent");
+            $("#arrow").removeClass("glyphicon glyphicon-menu-right");
+            $("#arrow").addClass("glyphicon glyphicon-menu-left");
+        }
+
+        function showsidebar(elem) {
+            $("#YTsearch").show();
+            $(elem).css("background-color","grey");
+            $("#arrow").removeClass("glyphicon glyphicon-menu-left");
+            $("#arrow").addClass("glyphicon glyphicon-menu-right");
+        }
+
         function initialize() {
 
             newTranscript(0);
 
             $( "#resizable" ).resizable();
 
+            //sidebar-ctrl click
+
+            $("#search").submit(function(event) {
+                event.preventDefault();
+                var url = $("#url").val();
+                if(url){
+                    var id = extract(url);
+                    if (id) {
+                        newYT(id);
+                    }
+                }
+                $("#url").val('');
+            });
+
+            $(".input-text").focus(function() {
+                state.listening = update("listening",false);
+            });
+
+            $(".input-text").focusout(function() {
+                state.listening = update("listening",true);
+            });
+
+            $("#sidebar-ctrl").click(function() {
+                    state.sidebar = update("sidebar");
+                    if (state.sidebar) {
+                        showsidebar(this);
+                    }
+                    else {
+                        hidesidebar(this);
+                    }
+            })
+
+            $(document).click(function(){
+                if (state.sidebar) {
+
+                }
+            });
+
+            $("#YTsearch").css("display","initial");
+            $("#YTsearch").hide();
             var ua = navigator.userAgent.toLowerCase();
             var isMobile = ua.indexOf("mobile") > -1;
 
@@ -339,6 +478,7 @@
 
         function extract(url) {
             var myregexp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i;
+
             if(myregexp.test(url)) {
                 var start = url.indexOf("v="), id;
                 if (start != -1)
@@ -357,28 +497,18 @@
             return url;
         }
 
-        $("#search").submit(function(event) {
-            event.preventDefault();
-            var url = $("#url").val();
-            if(url){
-                var id = extract(url);
-                if (id) {
-                    newYT(id);
-                }
-            }
-            $("#url").val('');
-        });
-
         function increment() {
+            //change to state variable and update state
             var val = $("#length").prop('max');
             if (val < 99999) {
-                $("#length").prop('max', Number(val) + 10000 );
+                $("#length").prop('max', Number(val) + 20 );
                 $("#length").prop('min', Number(val) );
                 $("#slider").html($("#length").val());
             }
         }
 
         function decrement() {
+            //change to state variable and update state
             var val = $("#length").prop('min');
             if (val > 0){
                 $("#length").prop('min', Number(val) -20 );
@@ -393,62 +523,61 @@
         var playBackState = 1, factor = 10;
 
         document.addEventListener('keypress', function(event) {
-            playBackState = player.getPlaybackRate();
-            var speed = -10;
+            //if focus on input type text silence key listeners
+            if(state.listening) {
 
-            if (event.keyCode === 91 && playBackState > .25) {
-                speed = array.indexOf(playBackState)-1;
-                player.setPlaybackRate(array[speed]);
-                playBackState = array[speed];
-                setTimeout(function() {document.getElementById("consoleY").innerHTML = "Speed: " + playBackState + "x";}, 100);
-            }
-            else if(event.keyCode === 93 && playBackState < 2) {
-                speed = array.indexOf(playBackState)+1;
-                player.setPlaybackRate(array[speed]);
-                playBackState = array[speed];
-                setTimeout(function() {document.getElementById("consoleY").innerHTML = "Speed: " + playBackState + "x";}, 100);
-            }
+                playBackState = player.getPlaybackRate();
+                var speed = -10;
 
-            var x = factor * playBackState;
-
-            if (event.keyCode === 106) {
-                player.seekTo(player.getCurrentTime() - x, true);
-            }
-            else if (event.keyCode === 108) {
-                player.seekTo(player.getCurrentTime() + x, true);
-            }
-
-            if (event.keyCode === 107) {
-                //player.getPlayerState() 1=playing 2=paused
-                var playerState = player.getPlayerState();
-                if (playerState === 1) {
-                    player.pauseVideo();
+                if (event.keyCode === 91 && playBackState > .25) {
+                    speed = array.indexOf(playBackState)-1;
+                    player.setPlaybackRate(array[speed]);
+                    playBackState = array[speed];
+                    setTimeout(function() {document.getElementById("consoleY").innerHTML = "Speed: " + playBackState + "x";}, 100);
                 }
-                else if (playerState ===2) {
-                    player.playVideo();
+                else if(event.keyCode === 93 && playBackState < 2) {
+                    speed = array.indexOf(playBackState)+1;
+                    player.setPlaybackRate(array[speed]);
+                    playBackState = array[speed];
+                    setTimeout(function() {document.getElementById("consoleY").innerHTML = "Speed: " + playBackState + "x";}, 100);
                 }
-            }
 
-            if (event.keyCode === 45) {
-                if (factor > 1){
-                    factor --;
-                    x = factor * playBackState;
+                var x = factor * playBackState;
+
+                if (event.keyCode === 106) {
+                    player.seekTo(player.getCurrentTime() - x, true);
                 }
-            }
-            else if (event.keyCode === 61) {
-                if (factor < 20) {
-                    factor ++;
-                    x = factor * playBackState;
-                    console.log('factor ' + factor + ' playBackState ' + playBackState + ' x ' + x);
+                else if (event.keyCode === 108) {
+                    player.seekTo(player.getCurrentTime() + x, true);
                 }
+
+                if (event.keyCode === 107) {
+                    //player.getPlayerState() 1=playing 2=paused
+                    var playerState = player.getPlayerState();
+                    if (playerState === 1) {
+                        player.pauseVideo();
+                    }
+                    else if (playerState ===2) {
+                        player.playVideo();
+                    }
+                }
+
+                if (event.keyCode === 45) {
+                    if (factor > 1){
+                        factor --;
+                        x = factor * playBackState;
+                    }
+                }
+                else if (event.keyCode === 61) {
+                    if (factor < 20) {
+                        factor ++;
+                        x = factor * playBackState;
+                    }
+                }
+
+                setTimeout(function() {document.getElementById("skipFactor").innerHTML = x + " seconds";}, 100);
             }
-            setTimeout(function() {document.getElementById("skipFactor").innerHTML = x + " seconds";}, 100);
         });
-
-
-
-
-        //$( this ).removeClass( "big-blue", 1000, "easeInBack" );
 
 
 
