@@ -38,7 +38,7 @@
     }
 
     #resizable {
-        width: 600px;
+        width: 565px;
         height: 200px;
         overflow:hidden;
         /*padding-bottom: 20px;
@@ -169,6 +169,7 @@
 
     #search {
         margin-top: 8px;
+        width: 200px;
     }
 
     #plusbtn {
@@ -187,50 +188,60 @@
         display:none;
     }
 
+    .searchbar {
+        margin-top: 10px;
+    }
+
     </style>
 
 </head>
 <body>
-    <div id="player"></div>
-    <div id="replayinputs">
-        <label for="replay" id="loopingcb">Activate Looping</label>
-        <input type="checkbox" id="cboxReplay" name="replay" onchange="updateReplayBox()" />
-        <button onclick="startLoop()">Start Loop</button>
-        <button class="slideCtrl" id="plusbtn" onclick="increment()" >+</button><button class="slideCtrl" onclick="decrement()">-</button>
-        <label for="slider" id="slider">10</label>
-        <input type="range" id="length" oninput="showVal(this.value)" onchange="showVal(this.value)" value="10" name="slider" min="0" max="20" step="0.1" />
-        <div id="playershortcuts" class="block">
-            <div>Player Shortcuts</div>
-            <ul id="shortcutskey">
-                <li>"j" = rewind</li>
-                <li>"k" = pause</li>
-                <li>"l" = fastforward</li>
-                <li>"[" = slow down playback speed</li>
-                <li>"]" = speed up playback speed</li>
-                <li>"-" = decrease skip rate</li>
-                <li>"=" = decrease skip rate</li>
-            </ul>
-        </div>
-        <div class="block" id="consoleY">Speed: 1x</div>
-        <div class="block">Skip Rate: <span id="skipFactor">10 seconds</span></div>
-    </div>
-    <div id="resizable" class="zindex0">
-        <div id="YTtranscript"></div>
-    </div>
-    <form id="search" class="zindex0">
-        <label for="newVid">Load New Video</label>
-        <input type="text" class="input-text" id="url" name="newVid" placeholder="Enter video URL/id" />
-        <input class="input-submit" type="submit" />
-    </form>
-
-    <div id="sidebar"><!-- make this fixed; name: sidebar-->
-        
-        <div id="YTsearch"> <!-- search area -->
-            <div>
-                <!-- text input label -->
-                <!-- text input -->
-                <!-- text input submit (input-text class) -->
+    <div class="container">
+        <div id="player"></div>
+        <div id="replayinputs">
+            <label for="replay" id="loopingcb">Activate Looping</label>
+            <input type="checkbox" id="cboxReplay" name="replay" onchange="updateReplayBox()" />
+            <button onclick="startLoop()">Start Loop</button>
+            <button class="slideCtrl" id="plusbtn" onclick="increment()" >+</button><button class="slideCtrl" onclick="decrement()">-</button>
+            <label for="slider" id="slider">10</label>
+            <input type="range" id="length" oninput="showVal(this.value)" onchange="showVal(this.value)" value="10" name="slider" min="0" max="20" step="0.1" />
+            <div id="playershortcuts" class="block">
+                <div>Player Shortcuts</div>
+                <ul id="shortcutskey">
+                    <li>"j" = rewind</li>
+                    <li>"k" = pause</li>
+                    <li>"l" = fastforward</li>
+                    <li>"[" = slow down playback speed</li>
+                    <li>"]" = speed up playback speed</li>
+                    <li>"-" = decrease skip rate</li>
+                    <li>"=" = decrease skip rate</li>
+                </ul>
             </div>
+            <div class="block" id="consoleY">Speed: 1x</div>
+            <div class="block">Skip Rate: <span id="skipFactor">10 seconds</span></div>
+        </div>
+        <div id="resizable" class="zindex0">
+            <div id="YTtranscript"></div>
+        </div>
+        <div id="search" class="zindex0 input-group">
+        <!--<form id="search" class="zindex0">-->
+            <span class="input-group-addon"><i class="glyphicon glyphicon-link"></i></span>
+            <input type="text" class="input-text form-control" id="url" name="newVid" placeholder="Enter video URL/id" />
+            <input class="input-submit" type="submit" />
+        <!--</form>-->
+        </div>
+
+    </div>
+    <div id="sidebar">
+        
+        <div id="YTsearch">
+
+            <div class="container input-group searchbar">
+                <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
+                <input type="text" name="YTsearch-input" class="input-text form-control" placeholder="Search..." />
+                <input class="input-submit" type="submit" />
+            </div>
+
             <div> <!-- results -->
                 <!-- title -->
                 <!-- video thumbnail -->
@@ -289,7 +300,8 @@
             else {
                 time = "";
             }
-            span.innerHTML = time + content + "<br />";
+            $(span).addClass("transcript-span");
+            $(span).html(time + content + "<br />")
             $("#YTtranscript").append(span);
         }
 
@@ -342,9 +354,9 @@
                 createSpan(AE.text,AE.time);
             });
 
-            $("span").unbind("click");
+            $(".transcript-span").unbind("click");
 
-            $("span").click(function() {
+            $(".transcript-span").click(function() {
                 var time = $(this).data("time");
                 player.seekTo(time);
                 if (state.cboxreplay) {
@@ -356,15 +368,15 @@
         function hidesidebar(elem) {
             $("#YTsearch").hide();
             $(elem).css("background-color","transparent");
-            $("#arrow").removeClass("glyphicon glyphicon-menu-right");
-            $("#arrow").addClass("glyphicon glyphicon-menu-left");
+            $("#arrow").removeClass("glyphicon-menu-right");
+            $("#arrow").addClass("glyphicon-menu-left");
         }
 
         function showsidebar(elem) {
             $("#YTsearch").show();
             $(elem).css("background-color","grey");
-            $("#arrow").removeClass("glyphicon glyphicon-menu-left");
-            $("#arrow").addClass("glyphicon glyphicon-menu-right");
+            $("#arrow").removeClass("glyphicon-menu-left");
+            $("#arrow").addClass("glyphicon-menu-right");
         }
 
         function initialize() {
