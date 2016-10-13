@@ -269,7 +269,7 @@
 
         function onPlayerReady(event) {
             player.setPlaybackRate(1);
-            state.loopTime = update("loopTime",player.getCurrentTime());
+            //state.loopTime = update("loopTime",player.getCurrentTime());
             initialize();
             updateTime();
             //event.target.playVideo();
@@ -500,21 +500,23 @@
 
         function increment() {
             //change to state variable and update state
-            var val = $("#length").prop('max');
-            if (val < 99999) {
-                $("#length").prop('max', Number(val) + 20 );
-                $("#length").prop('min', Number(val) );
-                $("#slider").html($("#length").val());
+            var value = $("#length").prop('max');
+            if (value < 99999) {
+                $("#length").prop('max', Number(value) + 20 );
+                $("#length").prop('min', Number(value) );
+                showVal($("#length").val());
+
             }
         }
 
         function decrement() {
             //change to state variable and update state
-            var val = $("#length").prop('min');
-            if (val > 0){
-                $("#length").prop('min', Number(val) -20 );
-                $("#length").prop('max', Number(val) );
-                $("#slider").html($("#length").val());
+            var value = $("#length").prop('min');
+            if (value > 0){
+                $("#length").prop('min', Number(value) -20 );
+                $("#length").prop('max', Number(value) );
+                showVal($("#length").val());
+
             }
         }
 
