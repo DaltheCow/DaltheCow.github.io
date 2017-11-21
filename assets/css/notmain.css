@@ -3,3 +3,40 @@
   max-width: 466px;
   object-fit: cover;
 }*/
+
+@media (min-width: 1150px) {
+  .image.ben-image {
+    max-width: 578px;
+  }
+}
+
+@media (min-width: 1280px) {
+  max-height: none;
+}
+
+.max-size {
+  max-height: 500px;
+  min-height: 500px;
+}
+
+.overflow-no {
+  overflow: hidden;
+}
+
+@media (max-width: 753px) {
+  .ben-class {
+    min-height: 866.5px !important;
+  }
+  
+  .image.ben-image img {
+    position: inherit !important;
+    margin: 0 auto;
+  }
+  
+}
+
+@media (min-width: 754px) {
+  .ben-class {
+    min-height: 0 !important;
+  }
+}
